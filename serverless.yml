@@ -1,0 +1,182 @@
+service: memify-backend
+frameworkVersion: '3'
+
+plugins:
+  - serverless-python-requirements
+
+custom:
+  pythonRequirements:
+    dockerizePip: non-linux
+
+provider:
+  name: aws
+  runtime: python3.10
+  httpApi:
+    cors: true
+    authorizers:
+        cognitoAuthorizer:
+            identitySource: $request.header.Authorization
+            issuerUrl: https://cognito-idp.us-east-1.amazonaws.com/us-east-1_QmRG9lq1S
+            audience:
+              - 73ei8v3vajg6jc83so501uobit
+
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - ssm:GetParameter
+      Resource:
+        - arn:aws:ssm:us-east-1:181524233307:parameter/*
+
+
+functions:
+  get-meme-by-id:
+    module: memes/get-by-id
+    handler: handler.get_meme_by_id
+    events:
+      - httpApi:
+          path: /memes/{id}
+          method: get
+
+  get-all-memes:
+    module: memes/get-all
+    handler: handler.get_all_memes
+    events:
+      - httpApi:
+          path: /memes
+          method: get
+
+  create-meme:
+    module: memes/create
+    handler: handler.create_meme
+    events:
+      - httpApi:
+          path: /memes
+          method: post
+          authorizer:
+            name: cognitoAuthorizer
+
+  delete-meme:
+    module: memes/delete
+    handler: handler.delete_meme
+    events:
+      - httpApi:
+          path: /memes/{id}
+          method: delete
+          authorizer:
+            name: cognitoAuthorizer
+
+
+  get-all-likes-by-meme-id:
+    module: likes/get-all-by-meme-id
+    handler: handler.get_all_likes_by_meme_id
+    events:
+      - httpApi:
+          path: /likes/{meme_id}
+          method: get
+
+  create-like:
+    module: likes/create
+    handler: handler.create_like
+    events:
+      - httpApi:
+          path: /likes
+          method: post
+          authorizer:
+            name: cognitoAuthorizer
+
+  delete-like:
+    module: likes/delete
+    handler: handler.delete_like
+    events:
+      - httpApi:
+          path: /likes/{meme_id}
+          method: delete
+          authorizer:
+            name: cognitoAuthorizer
+
+
+  get-all-shares-by-meme-id:
+    module: shares/get-all
+    handler: handler.get_all_shares_by_meme_id
+    events:
+      - httpApi:
+          path: /shares/{meme_id}
+          method: get
+
+  create-share:
+    module: shares/create
+    handler: handler.create_share
+    events:
+      - httpApi:
+          path: /shares
+          method: post
+          authorizer:
+            name: cognitoAuthorizer
+
+  create-template:
+    module: templates/create
+    handler: handler.create_template
+    events:
+      - httpApi:
+          path: /templates
+          method: post
+          authorizer:
+            name: cognitoAuthorizer
+
+  delete-template:
+    module: templates/delete
+    handler: handler.delete_template
+    events:
+      - httpApi:
+          path: /templates/{id}
+          method: delete
+          authorizer:
+            name: cognitoAuthorizer
+
+  get-all-templates:
+    module: templates/get-all
+    handler: handler.get_all_templates
+    events:
+      - httpApi:
+          path: /templates
+          method: get
+
+  get-my-templates:
+    module: templates/get-my
+    handler: handler.get_my_templates
+    events:
+      - httpApi:
+          path: /templates/get-my
+          method: get
+          authorizer:
+            name: cognitoAuthorizer
+
+  update-template:
+    module: templates/update
+    handler: handler.update_template
+    events:
+      - httpApi:
+          path: /templates/{id}
+          method: patch
+          authorizer:
+            name: cognitoAuthorizer
+
+  create-view:
+    module: views/create
+    handler: handler.create_view
+    events:
+      - httpApi:
+          path: /views
+          method: post
+          authorizer:
+            name: cognitoAuthorizer
+
+  get-all-views-by-meme-id:
+    module: views/get-all-by-meme-id
+    handler: handler.get_all_views_by_meme_id
+    events:
+      - httpApi:
+          path: /views/{meme_id}
+          method: get
+package:
+  individually: true

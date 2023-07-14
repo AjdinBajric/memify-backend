@@ -1,0 +1,23 @@
+service: post-trigger
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: python3.9
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - ssm:GetParameter
+      Resource:
+        - arn:aws:ssm:us-east-1:181524233307:parameter/*
+
+plugins:
+  - serverless-python-requirements
+
+custom:
+  pythonRequirements:
+    dockerizePip: non-linux
+
+functions:
+  hello:
+    handler: handler.hello
